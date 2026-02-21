@@ -94,6 +94,7 @@ const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log("Servidor ejecutándose en el puerto: ", PORT);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
 }).on("error", (error) => {
   throw new Error(error.message);
 });
