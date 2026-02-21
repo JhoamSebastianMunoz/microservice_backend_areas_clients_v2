@@ -1,15 +1,20 @@
 {
-  "name": "express-typescript",
+  "name": "microservice-areas-clients",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Microservicio de áreas y clientes",
+  "main": "dist/app.js",
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/app.js",
+    "dev": "tsc -w",
     "test": ""
   },
+  "keywords": ["express", "typescript", "microservice"],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.6",
     "axios": "^1.7.8",
