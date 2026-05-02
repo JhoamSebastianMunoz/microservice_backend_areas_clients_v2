@@ -14,7 +14,8 @@ descripcion varchar(255)
 
 create table clientes(
 id_cliente int auto_increment primary key,
-cedula varchar(15) not null ,
+cedula varchar(15) not null unique,
+email varchar(100) null,
 nombre_completo_cliente varchar(200) not null,
 direccion varchar(255) not null, 
 telefono varchar(15) not null,
@@ -35,7 +36,8 @@ CREATE TABLE usuario_zona (
     UNIQUE (id_usuario, id_zona_de_trabajo) -- Evitar asignaciones duplicadas
 );
 
-select* from zonas_de_trabajo;
-select * from clientes;
-select * from zonas_de_trabajo
-join clientes using(id_zona_de_trabajo);
+-- Consultas de prueba (comentadas para producción)
+-- select * from zonas_de_trabajo;
+-- select * from clientes;
+-- select * from zonas_de_trabajo
+-- join clientes using(id_zona_de_trabajo);
