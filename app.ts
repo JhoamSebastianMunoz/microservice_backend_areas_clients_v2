@@ -46,9 +46,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const allowedOrigins = [
   'http://localhost:8080',
   'http://localhost:5173',  // Frontend en desarrollo
-  'https://ambitious-sky-070d67b0f.4.azurestaticapps.net',  // Frontend deployado
-  'https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net',
-  // TODO: Agregar dominio de Railway después del deploy (ej: 'https://tu-proyecto.railway.app')
+  'https://microservicebackendareasclientsv2-production.up.railway.app/',// Dominio de Railway después del deploy 
 ];
 const corsOptions = {
   origin: function (origin: any, callback: any) {
