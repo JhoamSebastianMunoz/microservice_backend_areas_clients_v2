@@ -10,6 +10,59 @@ servers:
   - url: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net
     description: Servidor de producción
 
+tags:
+  - name: Áreas
+    description: Gestión de zonas de trabajo (Legacy - usar API v1)
+  - name: Clientes
+    description: Gestión de clientes (Legacy - usar API v1)
+  - name: Solicitudes de Creación
+    description: Gestión de solicitudes de creación de clientes (Legacy - usar API v1)
+  - name: Solicitudes para otro Microservicio
+    description: Endpoints para consumo de otros microservicios (Legacy - usar API v1)
+  - name: Microservicio Preventa
+    description: Endpoints específicos para el microservicio de preventa (Legacy - usar API v1)
+  - name: API v2 - Áreas (RESTful)
+    description: |
+      **NUEVA API v2 - Endpoints RESTful para Áreas**
+      
+      Cambios principales:
+      - Recurso en plural `/areas`
+      - Uso de métodos HTTP semánticos (GET, POST, PUT, DELETE)
+      - Versionado `/api/v2`
+      
+      Reemplaza endpoints legacy: `/register-area`, `/get-areas`, `/get-area/{id}`, `/update-area/{id}`, `/delete-area/{id}`
+  - name: API v2 - Clientes (RESTful)
+    description: |
+      **NUEVA API v2 - Endpoints RESTful para Clientes**
+      
+      Cambios principales:
+      - Recurso en plural `/clients`
+      - Uso de métodos HTTP semánticos (GET, POST, PUT, DELETE)
+      - Versionado `/api/v2`
+      
+      Reemplaza endpoints legacy: `/register-client`, `/get-clients`, `/get-client/{id}`, `/update-client/{id}`, `/delete-client/{id}`
+  - name: API v2 - Solicitudes (RESTful)
+    description: |
+      **NUEVA API v2 - Endpoints RESTful para Solicitudes de Clientes**
+      
+      Cambios principales:
+      - Recurso en plural `/client-requests`
+      - Filtrado por query params `?status=pending`
+      - Acción de aprobación como sub-recurso `/{id}/approve`
+      - Versionado `/api/v2`
+      
+      Reemplaza endpoints legacy: `/request-create-cliente`, `/get-Pending-Request`, `/accept-Reject-Request/{id}`
+  - name: API v2 - Internal (Microservices)
+    description: |
+      **NUEVA API v2 - Endpoints Internos para Microservicios**
+      
+      Cambios principales:
+      - Namespace dedicado `/internal`
+      - Sub-recursos RESTful `/areas/{id}/clients`
+      - Versionado `/api/v2`
+      
+      Reemplaza endpoints legacy: `/get_dataArea/{id}`, `/get_clientArea/{id}`, `/client/{id}`
+
 components:
   securitySchemes:
     bearerAuth:
@@ -775,3 +828,383 @@ paths:
                   details:
                     type: string
                     description: Detalles del error
+
+  # ============================================================
+  # NUEVAS RUTAS API v1 (RESTful - Consolidadas)
+  # ============================================================
+  # Estas rutas siguen los estándares RESTful con:
+  # - Versionado: /api/v2
+  # - Recursos en plural: /areas, /clients
+  # - Métodos HTTP semánticos
+  # ============================================================
+
+  /api/v2/areas:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Listar todas las áreas
+      description: Obtiene la lista de todas las áreas de trabajo (reemplaza /get-areas)
+      responses:
+        '200':
+          description: Lista de áreas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Area'
+        '500':
+          description: Error interno del servidor
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Crear nueva área
+      description: Crea una nueva área de trabajo (reemplaza /register-area)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Area'
+      responses:
+        '201':
+          description: Área creada exitosamente
+        '422':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/areas/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Obtener área por ID
+      description: Obtiene una área específica por su ID (reemplaza /get-area/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Área encontrada
+        '404':
+          description: Área no encontrada
+        '500':
+          description: Error interno del servidor
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Actualizar área
+      description: Actualiza una área existente (reemplaza /update-area/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Area'
+      responses:
+        '200':
+          description: Área actualizada
+        '404':
+          description: Área no encontrada
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Eliminar área
+      description: Elimina una área existente (reemplaza /delete-area/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Área eliminada
+        '404':
+          description: Área no encontrada
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/clients:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Listar todos los clientes
+      description: Obtiene la lista de todos los clientes (reemplaza /get-clients)
+      responses:
+        '200':
+          description: Lista de clientes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+        '500':
+          description: Error interno del servidor
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Crear nuevo cliente
+      description: Crea un nuevo cliente directamente (reemplaza /register-client)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        '201':
+          description: Cliente creado exitosamente
+        '422':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/clients/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Obtener cliente por ID
+      description: Obtiene un cliente específico por su ID (reemplaza /get-client/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente encontrado
+        '404':
+          description: Cliente no encontrado
+        '500':
+          description: Error interno del servidor
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Actualizar cliente
+      description: Actualiza un cliente existente (reemplaza /update-client/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        '200':
+          description: Cliente actualizado
+        '404':
+          description: Cliente no encontrado
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Eliminar cliente
+      description: Elimina un cliente existente (reemplaza /delete-client/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente eliminado
+        '404':
+          description: Cliente no encontrado
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/client-requests:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Solicitudes (RESTful)
+      summary: Listar solicitudes de clientes
+      description: Obtiene la lista de solicitudes de creación de clientes (reemplaza /get-Pending-Request)
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+          description: Filtrar por estado de la solicitud
+      responses:
+        '200':
+          description: Lista de solicitudes obtenida
+        '404':
+          description: No hay solicitudes pendientes
+        '500':
+          description: Error interno del servidor
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Solicitudes (RESTful)
+      summary: Crear solicitud de cliente
+      description: Crea una solicitud de creación de cliente pendiente de aprobación (reemplaza /request-create-cliente)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cedula
+                - nombre_completo_cliente
+                - direccion
+                - telefono
+              properties:
+                cedula:
+                  type: string
+                nombre_completo_cliente:
+                  type: string
+                direccion:
+                  type: string
+                telefono:
+                  type: string
+                rut_nit:
+                  type: string
+                razon_social:
+                  type: string
+                id_zona_de_trabajo:
+                  type: integer
+      responses:
+        '201':
+          description: Solicitud creada exitosamente
+        '422':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/client-requests/{id}/approve:
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Solicitudes (RESTful)
+      summary: Aprobar solicitud de cliente
+      description: Aprueba una solicitud de creación de cliente (reemplaza /accept-Reject-Request/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Solicitud aprobada
+        '404':
+          description: Solicitud no encontrada
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/internal/areas/{id}:
+    get:
+      tags:
+        - API v2 - Internal (Microservices)
+      summary: Obtener datos de área (para microservicios)
+      description: Obtiene información de un área para consumo interno de microservicios (reemplaza /get_dataArea/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del área obtenidos
+        '404':
+          description: Área no encontrada
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/internal/areas/{id}/clients:
+    get:
+      tags:
+        - API v2 - Internal (Microservices)
+      summary: Obtener clientes por área (para microservicios)
+      description: Obtiene la lista de clientes de un área para consumo interno (reemplaza /get_clientArea/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de clientes obtenida
+        '404':
+          description: No hay clientes en esta área
+        '500':
+          description: Error interno del servidor
+
+  /api/v2/internal/clients/{id}:
+    get:
+      tags:
+        - API v2 - Internal (Microservices)
+      summary: Obtener datos de cliente (para microservicios)
+      description: Obtiene información detallada de un cliente para consumo interno de microservicios (reemplaza /client/{id})
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del cliente obtenidos
+        '404':
+          description: Cliente no encontrado
+        '422':
+          description: Error de validación
+        '500':
+          description: Error interno del servidor

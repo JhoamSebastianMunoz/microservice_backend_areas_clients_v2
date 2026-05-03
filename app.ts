@@ -4,31 +4,9 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs"; 
 import cors from "cors";
 
-// importaciones de los servicios para zonas la cual esta relacionada con la tabla clientes
-import register_area from './routes/areaRoutes/register_area';
-import get_area from './routes/areaRoutes/get_area';
-import get_areas from './routes/areaRoutes/get_areas';
-import delete_area from './routes/areaRoutes/delete_area';
-import update_area from './routes/areaRoutes/update_area';
-// importaciones de los servicios para los clientes la cual se relaciona con la tabla de las zonas
-import register_client from './routes/clientRoutes/register_client';
-import get_clients from './routes/clientRoutes/get_clients';
-import get_client from './routes/clientRoutes/get_client';
-import delete_client from './routes/clientRoutes/delete_client';
-import update_client from './routes/clientRoutes/update_client';
-// importacion para asiganr zonas a un usuario
-import get_dataArea from './routes/MicroserviceUser/get_dataArea';
-import get_clientArea from './routes/MicroserviceUser/get_clientArea';
-// importacion para obtener la informacion del microservicio product
-import get_product from './routes/microserviceProductRoutes/get_product';
-// importacion para enviar la informacion del cliente al microservicio preventa
-import get_dataClient from './routes/microservicePresaleRoutes/get_dataClien';
-// importacion para la gestion de solicitud de creacion de cliente
-import requestCreateClient from './routes/clientCreationRequestRoutes/clientCreationRequestRoutes';
-import getPendingRequest from './routes/clientCreationRequestRoutes/getPendingRequest';
-import acceptOrRejectRequest from './routes/clientCreationRequestRoutes/acceptOrRejectRoutes'
-
 import dotenv from "dotenv";
+// Importación de rutas API v2 consolidadas
+import apiV2Routes from './routes/v2';
 
 dotenv.config();
 
@@ -63,30 +41,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-// Sentencia CRUD para Zonas de trabajo
-app.use('/register-area', register_area);
-app.use('/get-area', get_area);
-app.use('/get-areas', get_areas);
-app.use('/delete-area', delete_area);
-app.use('/update-area', update_area);
-// Sentencia CRUD para clientes
-app.use('/register-client', register_client);
-app.use('/get-clients', get_clients);
-app.use('/get-client', get_client);
-app.use('/delete-client', delete_client);
-app.use('/update-client', update_client);
-// Solicitud creación y aceptar cliente
-app.use('/request-create-cliente', requestCreateClient);
-app.use('/get-Pending-Request', getPendingRequest);
-app.use('/accept-Reject-Request', acceptOrRejectRequest)
-// Consulta para el microservicio usuarios
-app.use('/get_dataArea', get_dataArea);
-app.use('/get_clientArea', get_clientArea);
-// Consultar un producto de otro microservicio por ID
-// app.use('/get-product', get_product);
-
-// consultar datos cliente para el microservicio preventa
-app.use('/client', get_dataClient);
+// Nuevas rutas API v2 (RESTful - Consolidadas)
+app.use('/api/v2', apiV2Routes);
 
 // Configuración del puerto por donde correrá la aplicación
 const PORT = process.env.PORT || 8080;
