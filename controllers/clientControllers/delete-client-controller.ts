@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import DeleteClient from "../../Dto/DeleteClientDto";
-import ClientService from '../../services/ClientServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let delete_client = async (req: Request, res: Response) => {  
     try {
         const { id_cliente } = req.params;
-        const result = await ClientService.deleteClient(new DeleteClient(id_cliente));
+        const clientService = DependencyContainer.getInstance().clientService;
+        const result = await clientService.deleteClient(new DeleteClient(id_cliente));
         if (!result) {
             return res.status(404).json({ error: "Cliente no encontrado." });
         }

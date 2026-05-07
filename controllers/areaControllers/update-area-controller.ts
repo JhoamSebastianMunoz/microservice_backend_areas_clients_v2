@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import UpdateArea from '../../Dto/UpdateAreaDto';
-import AreaService from '../../services/AreaServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let update_area = async(req:Request, res:Response)=>{
     try {
@@ -10,7 +10,8 @@ let update_area = async(req:Request, res:Response)=>{
             descripcion,
             } = req.body;
         
-        const result = await AreaService.updateArea(new UpdateArea(id_zona_de_trabajo, nombre_zona_trabajo, descripcion));
+        const areaService = DependencyContainer.getInstance().areaService;
+        const result = await areaService.updateArea(new UpdateArea(id_zona_de_trabajo, nombre_zona_trabajo, descripcion));
             if(!result || result.affectedRows === 0){
                 return res.status(404).json({ error: "Zona de trabajo no encontrado." });
             }

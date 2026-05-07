@@ -1,25 +1,28 @@
-import AreaRepository from '../repositories/AreaRepository';
+import { IAreaRepository } from '../interfaces/IAreaRepository';
 import Area from '../Dto/AreaDto';
 import GetArea from '../Dto/GetAreaDto';
 import DeleteArea from '../Dto/DeleteAreaDto';
 import UpdateArea from '../Dto/UpdateAreaDto';
+import { IAreaService } from '../interfaces/IAreaService';
 
-class AreaService {
+class AreaService implements IAreaService {
     
-    static async register_area(area: Area) {
-        return await AreaRepository.add(area);
+    constructor(private areaRepository: IAreaRepository) {}
+    
+    async register_area(area: Area) {
+        return await this.areaRepository.add(area);
     }
-    static async getAreas(){
-        return await AreaRepository.getAll();
+    async getAreas(){
+        return await this.areaRepository.getAll();
     }
-    static async getArea(getArea : GetArea){
-        return await AreaRepository.get(getArea);
+    async getArea(getArea : GetArea){
+        return await this.areaRepository.get(getArea);
     }
-    static async deleteArea(deleteArea: DeleteArea){
-        return await AreaRepository.delete(deleteArea);
+    async deleteArea(deleteArea: DeleteArea){
+        return await this.areaRepository.delete(deleteArea);
     } 
-    static async updateArea(updateArea: UpdateArea){
-        return await AreaRepository.update(updateArea);
+    async updateArea(updateArea: UpdateArea){
+        return await this.areaRepository.update(updateArea);
         }
 };
 

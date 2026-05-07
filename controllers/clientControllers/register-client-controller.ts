@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import Client from '../../Dto/ClientDto';
-import ClientService from '../../services/ClientServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let register_client = async (req: Request, res: Response) => {  
   try {
     const {
       cedula,
+      email,
       nombre_completo_cliente,
       direccion,
       telefono,
@@ -14,7 +15,9 @@ let register_client = async (req: Request, res: Response) => {
       estado,
       id_zona_de_trabajo
     } = req.body;
-    const result = await ClientService.register_client(new Client(cedula, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo))
+    
+    const clientService = DependencyContainer.getInstance().clientService;
+    const result = await clientService.register_client(new Client(cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo))
     
     return res.status(201).json(
       { status: 'Cliente registrado con éxito'}

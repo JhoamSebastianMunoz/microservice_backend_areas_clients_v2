@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import DeleteArea from "../../Dto/DeleteAreaDto";
-import AreaService from '../../services/AreaServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let delete_area = async (req: Request, res: Response) => {  
     try {
         const { id_zona_de_trabajo } = req.params;
-        const result = await AreaService.deleteArea(new DeleteArea(id_zona_de_trabajo));
+        const areaService = DependencyContainer.getInstance().areaService;
+        const result = await areaService.deleteArea(new DeleteArea(id_zona_de_trabajo));
         if (!result) {
             return res.status(404).json({ error: "Zona de trabajo no encontrado." });
         }

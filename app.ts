@@ -7,6 +7,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 // Importación de rutas API v2 consolidadas
 import apiV2Routes from './routes/v2';
+import errorHandler from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -43,6 +44,9 @@ app.use(cors(corsOptions));
 
 // Nuevas rutas API v2 (RESTful - Consolidadas)
 app.use('/api/v2', apiV2Routes);
+
+// Middleware de manejo de errores (debe ir después de todas las rutas)
+app.use(errorHandler);
 
 // Configuración del puerto por donde correrá la aplicación
 const PORT = process.env.PORT || 8080;
