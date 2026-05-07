@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import GetClient from "../../Dto/GetClientDto";
-import ClientService from '../../services/ClientServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let get_client = async (req: Request, res: Response) => {  
     try {
         const { id_cliente } = req.params;
-        const result = await ClientService.getClient(new GetClient (id_cliente))
+        const clientService = DependencyContainer.getInstance().clientService;
+        const result = await clientService.getClient(new GetClient (id_cliente))
         if(result.length === 0) {
             return res.status(404).json({message: 'Cliente no encontrado'})
         }else{

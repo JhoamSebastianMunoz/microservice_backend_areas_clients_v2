@@ -7,6 +7,10 @@ let validatorParams = [
     check('cedula').isLength({ min: 6, max: 15 }).withMessage('La cédula debe tener entre 6 y 15 caracteres.')
     .isNumeric().withMessage('La cédula debe ser un número válido.')
     .bail(),
+    check('email').optional()
+    .isEmail().withMessage('Debe proporcionar un email válido.')
+    .isLength({ max: 100 }).withMessage('El email no debe exceder 100 caracteres.')
+    .bail(),
     check('nombre_completo_cliente').isLength({ min: 6, max: 200}).withMessage('Ingrese un nombre válido con mínimo 6 letras y máximo 200').bail(),
     check('direccion').isLength({ min: 5, max: 255}).withMessage('Ingrese una dirección entre 5 a 255 caracteres').bail(),
     check('telefono').isLength({ min: 8, max: 15 }).withMessage('El número de teléfono debe tener entre 8 y 15 caracteres.')

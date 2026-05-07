@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
-import AreasService from '../../services/AreaServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let get_Areas = async (req: Request, res: Response) => {  
     try {
-        const result = await AreasService.getAreas()
+        const areaService = DependencyContainer.getInstance().areaService;
+        const result = await areaService.getAreas()
         return res.status(200).json(result);
         } catch (error: any) {    
             if (error && error.code == "ER_DUP_ENTRY") {

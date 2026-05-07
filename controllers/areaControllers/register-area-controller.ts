@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Area from '../../Dto/AreaDto';
-import AreaService from '../../services/AreaServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let register_area = async (req: Request, res: Response) => {  
   try {
@@ -8,7 +8,9 @@ let register_area = async (req: Request, res: Response) => {
       nombre_zona_trabajo,
       descripcion,
     } = req.body;
-    const result = await AreaService.register_area(new Area(nombre_zona_trabajo, descripcion))
+    
+    const areaService = DependencyContainer.getInstance().areaService;
+    const result = await areaService.register_area(new Area(nombre_zona_trabajo, descripcion))
     
     return res.status(201).json(
       { status: 'Zona registrada con éxito'}
@@ -21,6 +23,5 @@ let register_area = async (req: Request, res: Response) => {
     }
   }
 };
-
 
 export default register_area;

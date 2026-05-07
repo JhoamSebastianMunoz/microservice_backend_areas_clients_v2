@@ -1,25 +1,28 @@
-import ClientRepository from '../repositories/ClientRepository';
+import { IClientRepository } from '../interfaces/IClientRepository';
 import Client from '../Dto/ClientDto';
 import GetClient from '../Dto/GetClientDto';
 import DeleteClient from '../Dto/DeleteClientDto';
 import UpdateClient from '../Dto/UpdateClientDto';
+import { IClientService } from '../interfaces/IClientService';
 
-class ClientService {
+class ClientService implements IClientService {
     
-    static async register_client(client: Client) {
-        return await ClientRepository.add(client);
+    constructor(private clientRepository: IClientRepository) {}
+    
+    async register_client(client: Client) {
+        return await this.clientRepository.add(client);
     }
-    static async getClients(){
-        return await ClientRepository.getAll();
+    async getClients(){
+        return await this.clientRepository.getAll();
     }
-    static async getClient(getClient : GetClient){
-        return await ClientRepository.get(getClient);
+    async getClient(getClient : GetClient){
+        return await this.clientRepository.get(getClient);
     }
-    static async deleteClient(deleteClient: DeleteClient){
-        return await ClientRepository.delete(deleteClient);
+    async deleteClient(deleteClient: DeleteClient){
+        return await this.clientRepository.delete(deleteClient);
     } 
-    static async updateClient(updateClient: UpdateClient){
-        return await ClientRepository.update(updateClient);
+    async updateClient(updateClient: UpdateClient){
+        return await this.clientRepository.update(updateClient);
     }
 };
 

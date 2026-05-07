@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
-import ClientService from '../../services/ClientServices';
+import DependencyContainer from '../../container/DependencyContainer';
 
 let get_clients = async (req: Request, res: Response) => {  
     try {
-        const result = await ClientService.getClients()
+        const clientService = DependencyContainer.getInstance().clientService;
+        const result = await clientService.getClients()
         return res.status(200).json(result);
         } catch (error: any) {    
             if (error && error.code == "ER_DUP_ENTRY") {
