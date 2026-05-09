@@ -3,6 +3,7 @@ import Area from '../Dto/AreaDto';
 import GetArea from '../Dto/GetAreaDto';
 import DeleteArea from '../Dto/DeleteAreaDto';
 import UpdateArea from '../Dto/UpdateAreaDto';
+import PaginationParams from '../Dto/PaginationDto';
 import { IAreaRepository } from '../interfaces/IAreaRepository';
 
 class AreaRepository implements IAreaRepository {
@@ -12,12 +13,27 @@ class AreaRepository implements IAreaRepository {
         return db.execute(sql, values);
     }
     async getAll(): Promise<GetArea[]> {
-        const sql = 'SELECT * FROM zonas_de_trabajo';
+        const sql = 'SELECT id_zona_de_trabajo, nombre_zona_trabajo, descripcion FROM zonas_de_trabajo';
         const [rows] = await db.execute(sql); 
         return rows as GetArea[];
     }
+    async getAllPaginated(pagination: PaginationParams): Promise<{areas: GetArea[], total: number}> {
+        // Primero obtener el total de registros
+        const countSql = 'SELECT COUNT(*) as total FROM zonas_de_trabajo';
+        const [countResult] = await db.execute(countSql) as any;
+        const total = countResult[0].total;
+
+        // Luego obtener los registros paginados
+        const dataSql = 'SELECT id_zona_de_trabajo, nombre_zona_trabajo, descripcion FROM zonas_de_trabajo LIMIT ? OFFSET ?';
+        const [rows] = await db.execute(dataSql, [pagination.limit, pagination.offset]);
+        
+        return {
+            areas: rows as GetArea[],
+            total: total
+        };
+    }
     async get(getArea : GetArea){
-        const sql = 'SELECT * FROM  zonas_de_trabajo WHERE id_zona_de_trabajo= ?';
+        const sql = 'SELECT id_zona_de_trabajo, nombre_zona_trabajo, descripcion FROM zonas_de_trabajo WHERE id_zona_de_trabajo= ?';
         const values = [getArea.id_zona_de_trabajo]; 
         const [rows] = await db.execute(sql, values);      
         return rows as GetArea[];

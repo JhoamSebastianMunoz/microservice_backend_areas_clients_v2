@@ -6,7 +6,7 @@ let delete_area = async (req: Request, res: Response) => {
     try {
         const { id_zona_de_trabajo } = req.params;
         const areaService = DependencyContainer.getInstance().areaService;
-        const result = await areaService.deleteArea(new DeleteArea(id_zona_de_trabajo));
+        const result = await areaService.deleteArea(new DeleteArea(parseInt(id_zona_de_trabajo)));
         if (!result) {
             return res.status(404).json({ error: "Zona de trabajo no encontrado." });
         }

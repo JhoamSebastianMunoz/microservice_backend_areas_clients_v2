@@ -18,7 +18,7 @@ let update_client = async(req:Request, res:Response)=>{
             } = req.body;
         
         const clientService = DependencyContainer.getInstance().clientService;
-        const result = await clientService.updateClient(new UpdateClient(id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo));
+        const result = await clientService.updateClient(new UpdateClient(parseInt(id_cliente), cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo));
             if(!result || result.affectedRows === 0){
             return res.status(404).json({ error: "Cliente no encontrado." });
         }

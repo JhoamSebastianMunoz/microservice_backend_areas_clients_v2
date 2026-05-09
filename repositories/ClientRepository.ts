@@ -3,6 +3,7 @@ import Client from '../Dto/ClientDto';
 import GetClient from '../Dto/GetClientDto';
 import DeleteClient from '../Dto/DeleteClientDto';
 import UpdateClient from '../Dto/UpdateClientDto';
+import PaginationParams from '../Dto/PaginationDto';
 import { IClientRepository } from '../interfaces/IClientRepository';
 
 class ClientRepository implements IClientRepository {
@@ -12,12 +13,27 @@ class ClientRepository implements IClientRepository {
         return db.execute(sql, values);
     }
     async getAll(): Promise<GetClient[]> {
-        const sql = "SELECT * FROM clientes WHERE estado IN('Activo', 'Inactivo')";
+        const sql = "SELECT id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo FROM clientes WHERE estado IN('Activo', 'Inactivo')";
         const [rows] = await db.execute(sql); 
         return rows as GetClient[];
     }
+    async getAllPaginated(pagination: PaginationParams): Promise<{clients: GetClient[], total: number}> {
+        // Primero obtener el total de registros
+        const countSql = "SELECT COUNT(*) as total FROM clientes WHERE estado IN('Activo', 'Inactivo')";
+        const [countResult] = await db.execute(countSql) as any;
+        const total = countResult[0].total;
+
+        // Luego obtener los registros paginados
+        const dataSql = "SELECT id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo FROM clientes WHERE estado IN('Activo', 'Inactivo') LIMIT ? OFFSET ?";
+        const [rows] = await db.execute(dataSql, [pagination.limit, pagination.offset]);
+        
+        return {
+            clients: rows as GetClient[],
+            total: total
+        };
+    }
     async get(getClient : GetClient){
-        const sql = 'SELECT * FROM clientes WHERE id_cliente= ?';
+        const sql = 'SELECT id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo FROM clientes WHERE id_cliente= ?';
         const values = [getClient.id_cliente]; 
         const [rows] = await db.execute(sql, values);      
         return rows as GetClient[];

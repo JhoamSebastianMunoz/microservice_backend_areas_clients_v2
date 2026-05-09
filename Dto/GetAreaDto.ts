@@ -1,9 +1,9 @@
 class GetArea {
     
-    public readonly id_zona_de_trabajo: string;
+    public readonly id_zona_de_trabajo: number;
     
     constructor(
-        id_zona_de_trabajo: string,
+        id_zona_de_trabajo: number,
     ) {
         this.id_zona_de_trabajo = id_zona_de_trabajo;    
     }   

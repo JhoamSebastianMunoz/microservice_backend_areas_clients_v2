@@ -1,11 +1,11 @@
 class UpdateArea {
     
-    public readonly id_zona_de_trabajo: string;
+    public readonly id_zona_de_trabajo: number;
     public readonly nombre_zona_trabajo: string;
     public readonly descripcion: string;
 
     constructor(
-        id_zona_de_trabajo:string, 
+        id_zona_de_trabajo:number, 
         nombre_zona_trabajo: string,
         descripcion: string,
     ) {
