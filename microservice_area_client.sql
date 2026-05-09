@@ -39,5 +39,5 @@ CREATE TABLE usuario_zona (
 -- Consultas de prueba (comentadas para producción)
 -- select * from zonas_de_trabajo;
 -- select * from clientes;
--- select * from zonas_de_trabajo
+-- select * from usuario_zona;
 -- join clientes using(id_zona_de_trabajo);

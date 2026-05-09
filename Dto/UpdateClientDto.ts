@@ -1,6 +1,6 @@
 class UpdateClient {
     
-    public readonly id_cliente: string;
+    public readonly id_cliente: number;
     public readonly cedula: string;
     public readonly email: string;
     public readonly nombre_completo_cliente: string;
@@ -12,7 +12,7 @@ class UpdateClient {
     public readonly id_zona_de_trabajo: string;
 
     constructor(
-        id_cliente:string, 
+        id_cliente:number, 
         cedula: string, 
         email: string,
         nombre_completo_cliente: string,

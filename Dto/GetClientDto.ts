@@ -1,9 +1,9 @@
 class GetClient {
     
-    public readonly id_cliente: string;
+    public readonly id_cliente: number;
     
     constructor(
-        id_cliente: string,
+        id_cliente: number,
     ) {
         this.id_cliente = id_cliente;    
     }   

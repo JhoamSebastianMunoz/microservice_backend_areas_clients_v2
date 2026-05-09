@@ -3,6 +3,7 @@ import Client from '../Dto/ClientDto';
 import GetClient from '../Dto/GetClientDto';
 import DeleteClient from '../Dto/DeleteClientDto';
 import UpdateClient from '../Dto/UpdateClientDto';
+import PaginationParams from '../Dto/PaginationDto';
 import { IClientService } from '../interfaces/IClientService';
 
 class ClientService implements IClientService {
@@ -14,6 +15,9 @@ class ClientService implements IClientService {
     }
     async getClients(){
         return await this.clientRepository.getAll();
+    }
+    async getClientsPaginated(pagination: PaginationParams){
+        return await this.clientRepository.getAllPaginated(pagination);
     }
     async getClient(getClient : GetClient){
         return await this.clientRepository.get(getClient);

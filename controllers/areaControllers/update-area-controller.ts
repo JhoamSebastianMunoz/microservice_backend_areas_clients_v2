@@ -11,7 +11,7 @@ let update_area = async(req:Request, res:Response)=>{
             } = req.body;
         
         const areaService = DependencyContainer.getInstance().areaService;
-        const result = await areaService.updateArea(new UpdateArea(id_zona_de_trabajo, nombre_zona_trabajo, descripcion));
+        const result = await areaService.updateArea(new UpdateArea(parseInt(id_zona_de_trabajo), nombre_zona_trabajo, descripcion));
             if(!result || result.affectedRows === 0){
                 return res.status(404).json({ error: "Zona de trabajo no encontrado." });
             }
