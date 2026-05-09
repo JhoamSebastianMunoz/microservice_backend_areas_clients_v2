@@ -1,36 +1,69 @@
 openapi: 3.0.0
 info:
-  title: API de Zonas de Trabajo y Clientes TATSoft
-  description: API para la gestión de áreas de trabajo, clientes y asignación de zonas a usuarios
-  version: 1.0.0
+  title: Microservicio de Áreas y Clientes
+  description: API RESTful para gestión de zonas de trabajo y clientes con arquitectura limpia y optimizada
+  version: 2.0.0
+  contact:
+    name: API Support
+    email: support@microservice.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:10101
-    description: Servidor local
-  - url: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net
+  - url: http://localhost:8080/api/v2
+    description: Servidor de desarrollo
+  - url: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net/api/v2
     description: Servidor de producción
 
 tags:
   - name: Áreas
-    description: Gestión de zonas de trabajo (Legacy - usar API v1)
+    description: Operaciones CRUD para gestión de zonas de trabajo
   - name: Clientes
-    description: Gestión de clientes (Legacy - usar API v1)
+    description: Operaciones CRUD para gestión de clientes
   - name: Solicitudes de Creación
     description: Gestión de solicitudes de creación de clientes (Legacy - usar API v1)
   - name: Solicitudes para otro Microservicio
     description: Endpoints para consumo de otros microservicios (Legacy - usar API v1)
-  - name: Microservicio Preventa
-    description: Endpoints específicos para el microservicio de preventa (Legacy - usar API v1)
+  - name: Microservicio Previene
+    description: Endpoints específicos para el microservicio de prevención (Legacy - usar API v1)
   - name: API v2 - Áreas (RESTful)
     description: |
       **NUEVA API v2 - Endpoints RESTful para Áreas**
       
-      Cambios principales:
-      - Recurso en plural `/areas`
-      - Uso de métodos HTTP semánticos (GET, POST, PUT, DELETE)
-      - Versionado `/api/v2`
+      ## Características Principales
+      - Arquitectura limpia con patrones SOLID
+      - Inyección de dependencias
+      - DTOs inmutables con propiedades readonly
+      - Paginación eficiente (limit/offset y page-based)
+      - Consultas SQL optimizadas (campos específicos)
+      - Caching inteligente para datos de referencia
+      - Manejo centralizado de errores
+      - Tipado fuerte y consistente
       
-      Reemplaza endpoints legacy: `/register-area`, `/get-areas`, `/get-area/{id}`, `/update-area/{id}`, `/delete-area/{id}`
+      ## Formatos Soportados
+      - **Paginación**: 
+        - `GET /areas?limit=10&offset=0` (limit/offset)
+        - `GET /areas?page=1&limit=10` (page-based)
+      - **Respuesta paginada**:
+        ```json
+        {
+          "data": [...],
+          "pagination": {
+            "total": 100,
+            "limit": 10,
+            "offset": 0,
+            "page": 1,
+            "totalPages": 10
+          }
+        }
+        ```
+      
+      ## Mejores Prácticas
+      - IDs numéricos consistentes con base de datos
+      - Validación exhaustiva de datos de entrada
+      - Manejo apropiado de códigos de estado HTTP
+      - Documentación completa y actualizada
   - name: API v2 - Clientes (RESTful)
     description: |
       **NUEVA API v2 - Endpoints RESTful para Clientes**
