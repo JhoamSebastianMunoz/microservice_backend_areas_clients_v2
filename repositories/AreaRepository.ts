@@ -24,8 +24,8 @@ class AreaRepository implements IAreaRepository {
         const total = countResult[0].total;
 
         // Luego obtener los registros paginados
-        const dataSql = 'SELECT id_zona_de_trabajo, nombre_zona_trabajo, descripcion FROM zonas_de_trabajo LIMIT ? OFFSET ?';
-        const [rows] = await db.execute(dataSql, [pagination.limit, pagination.offset]);
+        const dataSql = `SELECT id_zona_de_trabajo, nombre_zona_trabajo, descripcion FROM zonas_de_trabajo LIMIT ${pagination.offset}, ${pagination.limit}`;
+        const [rows] = await db.execute(dataSql);
         
         return {
             areas: rows as GetArea[],

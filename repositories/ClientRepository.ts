@@ -24,8 +24,8 @@ class ClientRepository implements IClientRepository {
         const total = countResult[0].total;
 
         // Luego obtener los registros paginados
-        const dataSql = "SELECT id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo FROM clientes WHERE estado IN('Activo', 'Inactivo') LIMIT ? OFFSET ?";
-        const [rows] = await db.execute(dataSql, [pagination.limit, pagination.offset]);
+        const dataSql = "SELECT id_cliente, cedula, email, nombre_completo_cliente, direccion, telefono, rut_nit, razon_social, estado, id_zona_de_trabajo FROM clientes WHERE estado IN('Activo', 'Inactivo') LIMIT ?, ?";
+        const [rows] = await db.execute(dataSql, [pagination.offset, pagination.limit]);
         
         return {
             clients: rows as GetClient[],

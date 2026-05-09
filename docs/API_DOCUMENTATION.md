@@ -1,246 +1,425 @@
-# Documentación de API - Microservicio de Áreas y Clientes
+# API Documentation - Microservicio de Áreas y Clientes v2.0
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-1. [Visión General](#visión-general)
-2. [Arquitectura](#arquitectura)
-3. [Endpoints Disponibles](#endpoints-disponibles)
-4. [DTOs y Estructuras de Datos](#dtos-y-estructuras-de-datos)
-5. [Paginación](#paginación)
-6. [Manejo de Errores](#manejo-de-errores)
-7. [Validaciones](#validaciones)
-8. [Caching](#caching)
-
----
-
-## 🎯 Visión General
-
-Este microservicio gestiona operaciones CRUD para **Zonas de Trabajo** y **Clientes**, implementando una arquitectura limpia con patrones de diseño modernos y optimizaciones de rendimiento.
-
-### Características Principales
-- ✅ **Arquitectura Limpia**: Implementación de patrones SOLID
-- ✅ **Inyección de Dependencias**: Desacoplamiento mediante contenedor
-- ✅ **DTOs Inmutables**: Objetos de transferencia con propiedades readonly
-- ✅ **Paginación Eficiente**: Soporte para grandes volúmenes de datos
-- ✅ **Consultas Optimizadas**: Selección específica de campos en lugar de SELECT *
-- ✅ **Caching Inteligente**: Almacenamiento temporal para datos de referencia
-- ✅ **Manejo Centralizado de Errores**: Middleware unificado para gestión de excepciones
-- ✅ **Tipado Fuerte**: Consistencia completa entre TypeScript y base de datos
+1. [Quick Start](#quick-start)
+2. [Authentication & Authorization](#authentication--authorization)
+3. [Core Endpoints](#core-endpoints)
+   - 3.1 [Áreas (CRUD completo)](#áreas-crud-completo)
+   - 3.2 [Clientes (CRUD completo)](#clientes-crud-completo)
+   - 3.3 [Solicitudes (Workflow de aprobación)](#solicitudes-workflow-de-aprobación)
+   - 3.4 [Microservicios Internos](#microservicios-internos)
+4. [Data Models & DTOs](#data-models--dtos)
+5. [Pagination & Filtering](#pagination--filtering)
+6. [Error Handling](#error-handling)
+7. [Caching Strategy](#caching-strategy)
+8. [Database Schema](#database-schema)
+9. [Development Guidelines](#development-guidelines)
 
 ---
 
-## 🏗️ Arquitectura
+## 🚀 Quick Start
 
-### Flujo de Datos
+### Base URL
 ```
-Request → Middleware → Controller → Service → Repository → Database
-   ↓              ↓           ↓           ↓            ↓
-Response    ← Validation ← Business ← Data Access ← SQL
+Development: http://localhost:8080/api/v2
+Production: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net/api/v2
 ```
 
-### Capas de la Aplicación
+### Example Request
+```bash
+# Listar todas las áreas
+curl -X GET "http://localhost:8080/api/v2/areas" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
 
-#### 1. **Routes** (`/routes/v2/`)
-- Definen los endpoints HTTP y middlewares aplicados
-- Manejan validación de entrada y autenticación
-
-#### 2. **Controllers** (`/controllers/`)
-- Orquestan las operaciones de negocio
-- Inyectan dependencias via DependencyContainer
-- Manejan respuestas HTTP y códigos de estado
-
-#### 3. **Services** (`/services/`)
-- Contienen la lógica de negocio
-- Implementan caching para optimización
-- Validan reglas de negocio
-
-#### 4. **Repositories** (`/repositories/`)
-- Abstraen el acceso a datos
-- Ejecutan consultas SQL optimizadas
-- Manejan transacciones con la base de datos
-
-#### 5. **DTOs** (`/Dto/`)
-- Objetos inmutables para transferencia de datos
-- Definen contratos claros entre capas
-- Validan estructura de datos
-
-#### 6. **Middleware** (`/middleware/`)
-- Validación de entrada de datos
-- Manejo centralizado de errores
-- Autenticación y autorización
-
----
-
-## 🚀 Endpoints Disponibles
-
-### Zonas de Trabajo (/api/v2/areas)
-
-| Método | Endpoint | Descripción | Paginación | Caching |
-|--------|-----------|-------------|-------------|----------|
-| GET | `/areas` | Listar todas las áreas | ✅ | ✅ |
-| GET | `/areas/:id` | Obtener área por ID | ❌ | ✅ |
-| POST | `/areas` | Crear nueva área | ❌ | ❌* |
-| PUT | `/areas/:id` | Actualizar área existente | ❌ | ❌* |
-| DELETE | `/areas/:id` | Eliminar área por ID | ❌ | ❌* |
-
-*Invalida caché automáticamente
-
-### Clientes (/api/v2/clients)
-
-| Método | Endpoint | Descripción | Paginación | Caching |
-|--------|-----------|-------------|-------------|----------|
-| GET | `/clients` | Listar todos los clientes | ✅ | ❌ |
-| GET | `/clients/:id` | Obtener cliente por ID | ❌ | ❌ |
-| POST | `/clients` | Crear nuevo cliente | ❌ | ❌ |
-| PUT | `/clients/:id` | Actualizar cliente existente | ❌ | ❌ |
-| DELETE | `/clients/:id` | Eliminar cliente por ID | ❌ | ❌ |
-
----
-
-## 📦 DTOs y Estructuras de Datos
-
-### DTOs Principales
-
-#### GetArea
-```typescript
-class GetArea {
-    public readonly id_zona_de_trabajo: number;
-    constructor(id_zona_de_trabajo: number);
+### Response Format
+```json
+{
+  "id_zona_de_trabajo": 1,
+  "nombre_zona_trabajo": "Zona Norte",
+  "descripcion": "Zona asignada para ventas en el sector norte"
 }
 ```
 
-#### GetClient
-```typescript
-class GetClient {
-    public readonly id_cliente: number;
-    constructor(id_cliente: number);
+---
+
+## 🔐 Authentication & Authorization
+
+### Current Status
+**⚠️ Authentication is temporarily disabled** for development purposes.
+
+### Required Headers (When Enabled)
+```http
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+### Role-Based Access Control
+- **ADMINISTRADOR**: Full access to all endpoints
+- **COLABORADOR**: Limited access (read-only + client requests)
+
+### Endpoint Permissions
+| Endpoint | ADMINISTRADOR | COLABORADOR |
+|----------|----------------|--------------|
+| GET /areas | ✅ | ✅ |
+| POST /areas | ✅ | ❌ |
+| PUT /areas | ✅ | ❌ |
+| DELETE /areas | ✅ | ❌ |
+| GET /clients | ✅ | ✅ |
+| POST /clients | ✅ | ❌ |
+| POST /client-requests | ❌ | ✅ |
+| PATCH /client-requests/:id/approve | ✅ | ❌ |
+
+---
+
+## 🎯 Core Endpoints
+
+### 3.1 Áreas (CRUD completo)
+
+#### Listar todas las áreas
+```http
+GET /api/v2/areas
+```
+
+**Query Parameters:**
+- `limit` (optional): Number of items per page (1-100, default: 10)
+- `offset` (optional): Number of items to skip (default: 0)
+- `page` (optional): Page number (calculates offset automatically)
+
+**Response:**
+```json
+[
+  {
+    "id_zona_de_trabajo": 1,
+    "nombre_zona_trabajo": "Zona Norte",
+    "descripcion": "Zona asignada para ventas en el sector norte"
+  }
+]
+```
+
+#### Crear nueva área
+```http
+POST /api/v2/areas
+```
+
+**Request Body:**
+```json
+{
+  "nombre_zona_trabajo": "Zona Sur",
+  "descripcion": "Zona asignada para ventas en el sector sur"
 }
 ```
 
-#### PaginationParams
-```typescript
-class PaginationParams {
-    public readonly limit: number;      // Default: 10
-    public readonly offset: number;     // Default: 0
-    public readonly page: number;       // Default: 1
-    
-    static fromQuery(query: any): PaginationParams;
+**Validation Rules:**
+- `nombre_zona_trabajo`: Required, 1-45 characters
+- `descripcion`: Optional, maximum 255 characters
+
+**Response:**
+```json
+{
+  "status": "Zona registrada con éxito"
 }
 ```
 
-### DTOs de Creación/Actualización
+#### Obtener área por ID
+```http
+GET /api/v2/areas/{id_zona_de_trabajo}
+```
 
-#### Area
+**Path Parameters:**
+- `id_zona_de_trabajo`: Integer, required
+
+**Response:**
+```json
+[
+  {
+    "id_zona_de_trabajo": 1,
+    "nombre_zona_trabajo": "Zona Norte",
+    "descripcion": "Zona asignada para ventas en el sector norte"
+  }
+]
+```
+
+#### Actualizar área
+```http
+PUT /api/v2/areas/{id_zona_de_trabajo}
+```
+
+**Request Body:** Same as POST
+
+#### Eliminar área
+```http
+DELETE /api/v2/areas/{id_zona_de_trabajo}
+```
+
+---
+
+### 3.2 Clientes (CRUD completo)
+
+#### Listar todos los clientes
+```http
+GET /api/v2/clients
+```
+
+**Response:**
+```json
+[
+  {
+    "id_cliente": 1,
+    "cedula": "1234567890",
+    "email": "cliente@ejemplo.com",
+    "nombre_completo_cliente": "Juan Pérez González",
+    "direccion": "Calle Principal #123, Ciudad",
+    "telefono": "3001234567",
+    "rut_nit": "900123456-7",
+    "razon_social": "Empresa XYZ S.A.S.",
+    "estado": "Activo",
+    "id_zona_de_trabajo": "5"
+  }
+]
+```
+
+#### Crear nuevo cliente
+```http
+POST /api/v2/clients
+```
+
+**Request Body:**
+```json
+{
+  "cedula": "1234567890",
+  "email": "cliente@ejemplo.com",
+  "nombre_completo_cliente": "Juan Pérez González",
+  "direccion": "Calle Principal #123, Ciudad",
+  "telefono": "3001234567",
+  "rut_nit": "900123456-7",
+  "razon_social": "Empresa XYZ S.A.S.",
+  "estado": "Activo",
+  "id_zona_de_trabajo": "5"
+}
+```
+
+**Validation Rules:**
+- `cedula`: Required, 6-15 characters, numeric only
+- `email`: Required, valid email format, max 100 characters
+- `nombre_completo_cliente`: Required, 6-200 characters
+- `direccion`: Required, 5-255 characters
+- `telefono`: Required, 8-15 characters, numeric only
+- `rut_nit`: Optional, max 30 characters
+- `razon_social`: Optional, max 100 characters
+- `estado`: Required, "Activo" or "Inactivo"
+- `id_zona_de_trabajo`: Optional, string
+
+#### Obtener cliente por ID
+```http
+GET /api/v2/clients/{id_cliente}
+```
+
+#### Actualizar cliente
+```http
+PUT /api/v2/clients/{id_cliente}
+```
+
+#### Eliminar cliente
+```http
+DELETE /api/v2/clients/{id_cliente}
+```
+
+---
+
+### 3.3 Solicitudes (Workflow de aprobación)
+
+#### Crear solicitud de cliente
+```http
+POST /api/v2/client-requests
+```
+
+**Request Body:**
+```json
+{
+  "cedula": "1234567890",
+  "nombre_completo_cliente": "Juan Pérez González",
+  "direccion": "Calle Principal #123, Ciudad",
+  "telefono": "3001234567",
+  "rut_nit": "900123456-7",
+  "razon_social": "Empresa XYZ S.A.S.",
+  "id_zona_de_trabajo": "5"
+}
+```
+
+**Validation Rules:**
+- Same as client creation but without `email`, `estado` required
+- `email` is NOT required for requests
+- `estado` defaults to "Pendiente"
+
+#### Listar solicitudes pendientes
+```http
+GET /api/v2/client-requests
+```
+
+**Response:**
+```json
+[
+  {
+    "id_cliente": 1,
+    "cedula": "1234567890",
+    "nombre_completo_cliente": "Juan Pérez González",
+    "direccion": "Calle Principal #123, Ciudad",
+    "telefono": "3001234567",
+    "rut_nit": "900123456-7",
+    "razon_social": "Empresa XYZ S.A.S.",
+    "estado": "Pendiente",
+    "id_zona_de_trabajo": "5"
+  }
+]
+```
+
+#### Aprobar solicitud
+```http
+PATCH /api/v2/client-requests/{id_client}/approve
+```
+
+---
+
+### 3.4 Microservicios Internos
+
+#### Obtener área para microservicios
+```http
+GET /api/v2/internal/areas/{id}
+```
+
+#### Obtener clientes por área para microservicios
+```http
+GET /api/v2/internal/areas/{id}/clients
+```
+
+#### Obtener cliente para microservicios
+```http
+GET /api/v2/internal/clients/{id}
+```
+
+---
+
+## 📦 Data Models & DTOs
+
+### Area DTO
 ```typescript
 class Area {
-    public readonly nombre_zona_trabajo: string;
-    public readonly descripcion: string;
-    constructor(nombre_zona_trabajo: string, descripcion: string);
+    public readonly nombre_zona_trabajo: string;  // Required, 1-45 chars
+    public readonly descripcion: string;          // Optional, max 255 chars
 }
 ```
 
-#### Client
+### Client DTO
 ```typescript
 class Client {
-    public readonly cedula: string;
-    public readonly email: string;
-    public readonly nombre_completo_cliente: string;
-    public readonly direccion: string;
-    public readonly telefono: string;
-    public readonly rut_nit: string;
-    public readonly razon_social: string;
-    public readonly estado: string;
-    public readonly id_zona_de_trabajo: string;
-    constructor(...);
+    public readonly cedula: string;                    // Required, 6-15 chars, numeric
+    public readonly email: string;                     // Required, email format, max 100
+    public readonly nombre_completo_cliente: string;   // Required, 6-200 chars
+    public readonly direccion: string;                 // Required, 5-255 chars
+    public readonly telefono: string;                  // Required, 8-15 chars, numeric
+    public readonly rut_nit: string;                  // Optional, max 30 chars
+    public readonly razon_social: string;              // Optional, max 100 chars
+    public readonly estado: string;                    // Required, "Activo"|"Inactivo"
+    public readonly id_zona_de_trabajo: string;       // Optional
+}
+```
+
+### RequestCreateClient DTO
+```typescript
+class RequestCreateClient {
+    public readonly cedula: string;                    // Required, 6-15 chars, numeric
+    public readonly nombre_completo_cliente: string;   // Required, 6-200 chars
+    public readonly direccion: string;                 // Required, 5-255 chars
+    public readonly telefono: string;                  // Required, 8-15 chars, numeric
+    public readonly rut_nit: string;                  // Optional, max 30 chars
+    public readonly razon_social: string;              // Optional, max 100 chars
+    public readonly id_zona_de_trabajo: string;       // Optional
+}
+```
+
+### PaginationParams DTO
+```typescript
+class PaginationParams {
+    public readonly limit: number;   // Default: 10, Min: 1, Max: 100
+    public readonly offset: number;  // Default: 0, Min: 0
+    public readonly page: number;    // Default: 1, Min: 1
 }
 ```
 
 ---
 
-## 📄 Paginación
+## 📄 Pagination & Filtering
 
-### Implementación
-La paginación se implementa mediante query parameters opcionales:
+### Implementation
+Pagination is implemented using query parameters:
 
-#### Método 1: Limit/Offset
-```
+#### Method 1: Limit/Offset
+```http
 GET /api/v2/areas?limit=10&offset=20
 ```
 
-#### Método 2: Page-based
-```
+#### Method 2: Page-based
+```http
 GET /api/v2/areas?page=3&limit=10
-// Calcula automáticamente: offset = (3-1) * 10 = 20
+// Automatically calculates: offset = (3-1) * 10 = 20
 ```
 
-### Respuesta Paginada
+### Paginated Response Structure
 ```json
 {
-    "data": [...],
-    "pagination": {
-        "total": 100,
-        "limit": 10,
-        "offset": 20,
-        "page": 3,
-        "totalPages": 10
+  "data": [...],
+  "pagination": {
+    "total": 100,
+    "limit": 10,
+    "offset": 20,
+    "page": 3,
+    "totalPages": 10
+  }
+}
+```
+
+---
+
+## ⚠️ Error Handling
+
+### Centralized Error Middleware
+The system implements unified error handling for:
+
+#### Database Errors
+- **ER_DUP_ENTRY**: Duplicate entry conflicts (409)
+- **ER_ROW_IS_REFERENCED**: Delete with existing references (409)
+- **ER_NO_REFERENCED_ROW_2**: Non-existent references (400)
+
+#### Validation Errors
+- **ValidationError**: Invalid input data (422)
+- **SyntaxError**: Malformed JSON (400)
+
+### Error Response Format
+```json
+{
+  "error": "Validation Error",
+  "message": "Invalid input data",
+  "details": "Additional technical details (development only)",
+  "errors": [
+    {
+      "type": "field",
+      "msg": "The cedula must be numeric",
+      "path": "cedula",
+      "location": "body"
     }
+  ]
 }
 ```
 
----
-
-## ⚠️ Manejo de Errores
-
-### Middleware Centralizado
-El sistema implementa un middleware de errores unificado que maneja:
-
-#### Errores de Base de Datos
-- **ER_DUP_ENTRY**: Conflictos de duplicidad (409)
-- **ER_ROW_IS_REFERENCED**: Intento de eliminar con referencias (409)
-- **ER_NO_REFERENCED_ROW_2**: Referencias inexistentes (400)
-
-#### Errores de Validación
-- **ValidationError**: Datos inválidos (422)
-- **SyntaxError**: JSON malformado (400)
-
-#### Errores del Sistema
-- **Internal Server Error**: Errores inesperados (500)
-
-### Formato de Respuesta de Error
-```json
-{
-    "error": "Tipo de error",
-    "message": "Descripción amigable",
-    "details": "Detalles técnicos (solo en desarrollo)"
-}
-```
-
----
-
-## ✅ Validaciones
-
-### Validación de Entrada
-Se utiliza `express-validator` para validar datos de entrada:
-
-#### Áreas
-- `nombre_zona_trabajo`: Requerido, 1-45 caracteres
-- `descripcion`: Requerido, máximo 255 caracteres
-
-#### Clientes
-- `cedula`: Requerido, 6-15 caracteres, numérico
-- `email`: Requerido, formato email válido, máximo 100 caracteres
-- `nombre_completo_cliente`: Requerido, 6-200 caracteres
-- `direccion`: Requerido, 5-255 caracteres
-- `telefono`: Requerido, 8-15 caracteres, numérico
-- `rut_nit`: Opcional, máximo 30 caracteres
-- `razon_social`: Opcional, máximo 120 caracteres
-- `estado`: Requerido, valores: 'Activo', 'Inactivo'
-- `id_zona_de_trabajo`: Opcional, entero positivo
-
-### Códigos de Estado HTTP
+### HTTP Status Codes
 - `200`: Success
 - `201`: Created
 - `400`: Bad Request
+- `401`: Unauthorized
+- `403`: Forbidden
 - `404`: Not Found
 - `409`: Conflict
 - `422`: Unprocessable Entity
@@ -248,131 +427,157 @@ Se utiliza `express-validator` para validar datos de entrada:
 
 ---
 
-## 💾 Caching
+## 💾 Caching Strategy
 
-### Estrategia de Caching
-Se implementa caching en memoria para optimizar rendimiento:
+### Cache Implementation
+In-memory caching is implemented for performance optimization:
 
-#### Datos Cacheados
-- **Áreas**: Datos de referencia que cambian infrecuentemente
-- **TTL**: 5 minutos (300,000 ms)
-- **Alcance**: Todas las operaciones GET de áreas
+#### Cached Data
+- **Areas**: Reference data that changes infrequently
+- **TTL**: 5 minutes (300,000 ms)
+- **Scope**: All GET operations for areas
 
-#### Métodos de Cache
+#### Cache Methods
 ```typescript
-// Almacenar
+// Store
 CacheService.getInstance().set(key, data, ttl);
 
-// Recuperar
+// Retrieve
 const cached = CacheService.getInstance().get(key);
 
-// Invalidar
+// Invalidate
 CacheService.getInstance().delete(key);
 
-// Limpiar todo
+// Clear all
 CacheService.getInstance().clear();
 ```
 
-#### Estrategias de Invalidación
-- **Creación**: Invalida caché de todas las áreas
-- **Actualización**: Invalida caché del área específica y general
-- **Eliminación**: Invalida caché del área específica y general
+#### Cache Invalidation Strategies
+- **Creation**: Invalidates all areas cache
+- **Update**: Invalidates specific area and general cache
+- **Delete**: Invalidates specific area and general cache
 
 ---
 
-## 🔧 Configuración y Despliegue
+## 🗄️ Database Schema
 
-### Variables de Entorno
-- `PORT`: Puerto del servidor (default: 8080)
-- `NODE_ENV`: Ambiente (development/production)
-- `DB_*`: Configuración de base de datos
+### Tables Structure
 
-### Dependencias Principales
-- **Express**: Framework web
-- **TypeScript**: Tipado estático
-- **MySQL**: Base de datos relacional
-- **express-validator**: Validación de entrada
-- **node-fetch**: Cliente HTTP (para desarrollo)
+#### zonas_de_trabajo
+```sql
+CREATE TABLE zonas_de_trabajo(
+    id_zona_de_trabajo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_zona_trabajo VARCHAR(45),
+    descripcion VARCHAR(255)
+);
+```
 
-### Scripts Disponibles
-```json
-{
-    "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
-    "build": "tsc",
-    "test": "jest"
-}
+#### clientes
+```sql
+CREATE TABLE clientes(
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    cedula VARCHAR(15) NOT NULL UNIQUE,
+    email VARCHAR(100) NULL,
+    nombre_completo_cliente VARCHAR(200) NOT NULL,
+    direccion VARCHAR(255) NOT NULL,
+    telefono VARCHAR(15) NOT NULL,
+    rut_nit VARCHAR(30) NULL,
+    razon_social VARCHAR(120) NULL,
+    fecha_registro DATE NOT NULL DEFAULT (CURRENT_DATE),
+    estado ENUM('Activo', 'Inactivo', 'Pendiente') NOT NULL DEFAULT 'Activo',
+    id_zona_de_trabajo INT,
+    FOREIGN KEY (id_zona_de_trabajo) REFERENCES zonas_de_trabajo(id_zona_de_trabajo)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+```
+
+#### usuario_zona
+```sql
+CREATE TABLE usuario_zona (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_zona_de_trabajo INT NOT NULL,
+    FOREIGN KEY (id_zona_de_trabajo) REFERENCES zonas_de_trabajo(id_zona_de_trabajo) 
+    ON DELETE CASCADE,
+    UNIQUE (id_usuario, id_zona_de_trabajo)
+);
 ```
 
 ---
 
-## 📊 Métricas y Optimización
+## 🔧 Development Guidelines
 
-### Optimizaciones Implementadas
-1. **Consultas SQL Optimizadas**: Selección específica de campos (~60% menos datos)
-2. **Paginación Eficiente**: Soporte para grandes volúmenes
-3. **Caching Inteligente**: Respuestas en milisegundos para datos de referencia
-4. **Tipado Consistente**: IDs numéricos coincidentes con BD
-5. **Inmutabilidad**: DTOs con propiedades readonly
+### Request Flow
+```
+Request → Middleware → Controller → Service → Repository → Database
+   ↓              ↓           ↓           ↓            ↓
+Response    ← Validation ← Business ← Data Access ← SQL
+```
 
-### Mejores Prácticas Aplicadas
-- ✅ Patrones SOLID
-- ✅ Inyección de dependencias
-- ✅ Principio DRY (Don't Repeat Yourself)
-- ✅ Separación de responsabilidades
-- ✅ Manejo centralizado de errores
-- ✅ Documentación completa
+### Best Practices Applied
+- ✅ SOLID Principles
+- ✅ Dependency Injection
+- ✅ DRY Principle (Don't Repeat Yourself)
+- ✅ Separation of Concerns
+- ✅ Centralized Error Handling
+- ✅ Complete Documentation
+
+### Performance Optimizations
+1. **Optimized SQL Queries**: Specific field selection (~60% less data)
+2. **Efficient Pagination**: Support for large volumes
+3. **Intelligent Caching**: Millisecond responses for reference data
+4. **Consistent Typing**: Numeric IDs matching database
+5. **Immutability**: DTOs with readonly properties
+
+### Development Considerations
+1. **Typing**: Maintain consistency between TypeScript and database
+2. **Validations**: Add new validations in specific middlewares
+3. **Caching**: Consider which data benefits from cache
+4. **Queries**: Avoid SELECT * in production
+5. **Errors**: Use centralized middleware for new endpoints
+
+### Monitoring Recommendations
+- Endpoint performance metrics
+- Cache hit rates
+- Database response times
+- Error frequency by type
 
 ---
 
-## 🔄 Flujo de Desarrollo
+## 🔄 Testing the API
 
-### Flujo Típico de una Petición
-1. **Request**: Cliente envía petición HTTP
-2. **Middleware**: Validación y autenticación
-3. **Controller**: Orquestación y llamada a service
-4. **Service**: Lógica de negocio y posible caché
-5. **Repository**: Acceso a datos con consulta optimizada
-6. **Database**: Ejecución de SQL y retorno de datos
-7. **Response**: Construcción de respuesta HTTP con metadata
+### Example Test Cases
 
-### Manejo de Errores en Desarrollo
-```typescript
-try {
-    // Lógica de negocio
-} catch (error: any) {
-    // Logging estructurado
-    console.error('Error:', {
-        message: error.message,
-        stack: error.stack,
-        url: req.url,
-        method: req.method,
-        timestamp: new Date().toISOString()
-    });
-    
-    // Respuesta controlada por middleware
-    next(error);
-}
+#### Create Area
+```bash
+curl -X POST "http://localhost:8080/api/v2/areas" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre_zona_trabajo": "Zona Test",
+    "descripcion": "Área de prueba"
+  }'
+```
+
+#### Get Areas with Pagination
+```bash
+curl -X GET "http://localhost:8080/api/v2/areas?page=1&limit=5" \
+  -H "Content-Type: application/json"
+```
+
+#### Create Client Request
+```bash
+curl -X POST "http://localhost:8080/api/v2/client-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cedula": "987654321",
+    "nombre_completo_cliente": "Cliente Test",
+    "direccion": "Dirección Test",
+    "telefono": "3219876543"
+  }'
 ```
 
 ---
 
-## 📝 Notas de Mantenimiento
-
-### Consideraciones para Desarrolladores
-1. **Tipado**: Mantener consistencia entre TypeScript y base de datos
-2. **Validaciones**: Agregar nuevas validaciones en middlewares específicos
-3. **Caching**: Considerar qué datos benefician de caché
-4. **Consultas**: Evitar SELECT * en producción
-5. **Errores**: Utilizar middleware centralizado para nuevos endpoints
-
-### Monitoreo Recomendado
-- Métricas de rendimiento de endpoints
-- Tasa de aciertos de caché
-- Tiempos de respuesta de base de datos
-- Frecuencia de errores por tipo
-
----
-
-*Última actualización: Mayo 2026*
-*Versión: 2.0 - Arquitectura Refactorizada*
+*Last updated: May 2026*
+*Version: 2.0 - Architecture Refactored*
+*Status: Production Ready*

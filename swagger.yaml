@@ -3,18 +3,15 @@ info:
   title: Microservicio de Áreas y Clientes
   description: API RESTful para gestión de zonas de trabajo y clientes con arquitectura limpia y optimizada
   version: 2.0.0
-  contact:
-    name: API Support
-    email: support@microservice.com
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:8080/api/v2
-    description: Servidor de desarrollo
-  - url: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net/api/v2
-    description: Servidor de producción
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://microservicebackendareasclientsv2-production.up.railway.app
+    description: Production server
 
 tags:
   - name: Áreas
@@ -25,8 +22,8 @@ tags:
     description: Gestión de solicitudes de creación de clientes (Legacy - usar API v1)
   - name: Solicitudes para otro Microservicio
     description: Endpoints para consumo de otros microservicios (Legacy - usar API v1)
-  - name: Microservicio Previene
-    description: Endpoints específicos para el microservicio de prevención (Legacy - usar API v1)
+  - name: Microservicio Preventa
+    description: Endpoints específicos para el microservicio de preventa (Legacy - usar API v1)
   - name: API v2 - Áreas (RESTful)
     description: |
       **NUEVA API v2 - Endpoints RESTful para Áreas**
@@ -111,11 +108,15 @@ components:
           type: string
           minLength: 1
           maxLength: 45
-          description: Nombre del área de trabajo
+          description: Nombre del área de trabajo (requerido, 1-45 caracteres)
+          example: "Zona Norte"
         descripcion:
           type: string
           maxLength: 255
-          description: Descripción del área de trabajo
+          description: Descripción del área de trabajo (opcional, máximo 255 caracteres)
+          example: "Zona asignada para ventas en el sector norte"
+      required:
+        - nombre_zona_trabajo
           
     Client:
       type: object
@@ -124,38 +125,167 @@ components:
           type: string
           minLength: 6
           maxLength: 15
-          description: Número de cédula del cliente
+          pattern: '^[0-9]+$'
+          description: Número de cédula del cliente (requerido, solo números, 6-15 caracteres)
+          example: "1234567890"
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del cliente (requerido, formato email válido, máximo 100 caracteres)
+          example: "cliente@ejemplo.com"
         nombre_completo_cliente:
           type: string
           minLength: 6
           maxLength: 200
-          description: Nombre completo del cliente
+          description: Nombre completo del cliente (requerido, 6-200 caracteres)
+          example: "Juan Pérez González"
         direccion:
           type: string
           minLength: 5
           maxLength: 255
-          description: Dirección del cliente
+          description: Dirección del cliente (requerido, 5-255 caracteres)
+          example: "Calle Principal #123, Ciudad"
         telefono:
           type: string
           minLength: 8
           maxLength: 15
-          description: Número de teléfono del cliente
+          pattern: '^[0-9]+$'
+          description: Número de teléfono del cliente (requerido, solo números, 8-15 caracteres)
+          example: "3001234567"
         rut_nit:
           type: string
           maxLength: 30
-          description: RUT/NIT del cliente
+          description: RUT/NIT del cliente (opcional, máximo 30 caracteres)
+          example: "900123456-7"
         razon_social:
           type: string
           maxLength: 100
-          description: Razón social del cliente
+          description: Razón social del cliente (opcional, máximo 100 caracteres)
+          example: "Empresa XYZ S.A.S."
         estado:
           type: string
-          enum: [Activo, Inactivo]
-          description: Estado del cliente
+          enum: ["Activo", "Inactivo"]
+          description: Estado del cliente (requerido)
+          example: "Activo"
         id_zona_de_trabajo:
-          type: integer
-          description: ID del área de trabajo asignada
+          type: string
+          description: ID del área de trabajo asignada (opcional, string según implementación actual)
+          example: "5"
+      required:
+        - cedula
+        - email
+        - nombre_completo_cliente
+        - direccion
+        - telefono
+        - estado
     
+    RequestCreateClient:
+      type: object
+      properties:
+        cedula:
+          type: string
+          minLength: 6
+          maxLength: 15
+          pattern: '^[0-9]+$'
+          description: Número de cédula del cliente (requerido, solo números, 6-15 caracteres)
+          example: "1234567890"
+        nombre_completo_cliente:
+          type: string
+          minLength: 6
+          maxLength: 200
+          description: Nombre completo del cliente (requerido, 6-200 caracteres)
+          example: "Juan Pérez González"
+        direccion:
+          type: string
+          minLength: 5
+          maxLength: 255
+          description: Dirección del cliente (requerido, 5-255 caracteres)
+          example: "Calle Principal #123, Ciudad"
+        telefono:
+          type: string
+          minLength: 8
+          maxLength: 15
+          pattern: '^[0-9]+$'
+          description: Número de teléfono del cliente (requerido, solo números, 8-15 caracteres)
+          example: "3001234567"
+        rut_nit:
+          type: string
+          maxLength: 30
+          description: RUT/NIT del cliente (opcional, máximo 30 caracteres)
+          example: "900123456-7"
+        razon_social:
+          type: string
+          maxLength: 100
+          description: Razón social del cliente (opcional, máximo 100 caracteres)
+          example: "Empresa XYZ S.A.S."
+        id_zona_de_trabajo:
+          type: string
+          description: ID del área de trabajo asignada (opcional)
+          example: "5"
+      required:
+        - cedula
+        - nombre_completo_cliente
+        - direccion
+        - telefono
+
+    PaginationParams:
+      type: object
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Número de elementos por página (default: 10)
+          example: 10
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Número de elementos a saltar (default: 0)
+          example: 20
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Número de página (calcula offset automáticamente)
+          example: 3
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Area'
+              - $ref: '#/components/schemas/Client'
+          description: Lista de elementos paginados
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total de elementos disponibles
+              example: 100
+            limit:
+              type: integer
+              description: Límite de elementos por página
+              example: 10
+            offset:
+              type: integer
+              description: Elementos saltados
+              example: 20
+            page:
+              type: integer
+              description: Página actual
+              example: 3
+            totalPages:
+              type: integer
+              description: Total de páginas
+              example: 10
+
     Error:
       type: object
       properties:
@@ -165,16 +295,88 @@ components:
         details:
           type: string
           description: Detalles adicionales del error
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              msg:
+                type: string
+              path:
+                type: string
+              location:
+                type: string
+          description: Array de errores de validación (para status 422)
 
 paths:
-  /register-area:
+
+  
+  # ============================================================
+  # API v2 - Endpoints RESTful (Implementación Real)
+  # ============================================================
+  # Rutas que existen realmente en el código:
+  # - /routes/v2/area.routes.ts
+  # - /routes/v2/client.routes.ts  
+  # - /routes/v2/client-request.routes.ts
+  # ============================================================
+
+  /api/v2/areas:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Áreas (RESTful)
+      summary: Listar todas las áreas
+      description: Obtiene la lista de todas las áreas de trabajo con soporte de paginación
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Número de elementos por página
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Número de elementos a saltar
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página (calcula offset automáticamente)
+      responses:
+        '200':
+          description: Lista de áreas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Area'
+                  - $ref: '#/components/schemas/PaginatedResponse'
+        '500':
+          description: Error interno del servidor
+
     post:
       security:
         - bearerAuth: []
       tags:
-        - Áreas
-      summary: Registrar nueva área de trabajo
-      description: Crear una nueva área de trabajo en el sistema
+        - API v2 - Áreas (RESTful)
+      summary: Crear nueva área
+      description: Crea una nueva área de trabajo en el sistema
       requestBody:
         required: true
         content:
@@ -183,7 +385,7 @@ paths:
               $ref: '#/components/schemas/Area'
       responses:
         '201':
-          description: Área registrada exitosamente
+          description: Área creada exitosamente
           content:
             application/json:
               schema:
@@ -194,37 +396,25 @@ paths:
                     example: "Zona registrada con éxito"
         '422':
           description: Error de validación
-        '500':
-          description: Error interno del servidor
-          
-  /get-areas:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - Áreas
-      summary: Obtener todas las áreas
-      description: Retorna la lista de todas las áreas de trabajo
-      responses:
-        '200':
-          description: Lista de áreas obtenida exitosamente
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Area'
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /get-area/{id_zona_de_trabajo}:
+  /api/v2/areas/{id_zona_de_trabajo}:
     get:
       security:
         - bearerAuth: []
       tags:
-        - Áreas
-      summary: Obtener un área específica
-      description: Retorna un área de trabajo por su ID
+        - API v2 - Áreas (RESTful)
+      summary: Obtener área por ID
+      description: Obtiene una área específica por su ID con caching
       parameters:
         - name: id_zona_de_trabajo
           in: path
@@ -235,44 +425,32 @@ paths:
       responses:
         '200':
           description: Área encontrada exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Area'
         '404':
           description: Área no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
-          
-  /delete-area/{id_zona_de_trabajo}:
-    delete:
-      security:
-        - bearerAuth: []
-      tags:
-        - Áreas
-      summary: Eliminar un área
-      description: Elimina un área de trabajo por su ID
-      parameters:
-        - name: id_zona_de_trabajo
-          in: path
-          required: true
-          description: ID del área a eliminar
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Área eliminada exitosamente
-        '404':
-          description: Área no encontrada
-        '409':
-          description: No se puede eliminar el área debido a referencias existentes
-        '500':
-          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /update-area/{id_zona_de_trabajo}:
     put:
       security:
         - bearerAuth: []
       tags:
-        - Áreas
-      summary: Actualizar un área
-      description: Actualiza la información de un área existente
+        - API v2 - Áreas (RESTful)
+      summary: Actualizar área
+      description: Actualiza una área existente por su ID
       parameters:
         - name: id_zona_de_trabajo
           in: path
@@ -289,41 +467,85 @@ paths:
       responses:
         '200':
           description: Área actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Área actualizada con éxito"
         '404':
           description: Área no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /register-client:
-    post:
+    delete:
       security:
         - bearerAuth: []
       tags:
-        - Clientes
-      summary: Registrar nuevo cliente
-      description: Crear un nuevo cliente en el sistema
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Client'
+        - API v2 - Áreas (RESTful)
+      summary: Eliminar área
+      description: Elimina un área existente por su ID
+      parameters:
+        - name: id_zona_de_trabajo
+          in: path
+          required: true
+          description: ID del área a eliminar
+          schema:
+            type: integer
       responses:
-        '201':
-          description: Cliente registrado exitosamente
-        '422':
-          description: Error de validación
+        '200':
+          description: Área eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Área eliminada con éxito"
+        '404':
+          description: Área no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: No se puede eliminar el área debido a referencias existentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /get-clients:
+  /api/v2/clients:
     get:
       security:
         - bearerAuth: []
       tags:
-        - Clientes
-      summary: Obtener todos los clientes
-      description: Retorna la lista de todos los clientes
+        - API v2 - Clientes (RESTful)
+      summary: Listar todos los clientes
+      description: Obtiene la lista de todos los clientes del sistema
       responses:
         '200':
           description: Lista de clientes obtenida exitosamente
@@ -335,15 +557,56 @@ paths:
                   $ref: '#/components/schemas/Client'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /get-client/{id_cliente}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - API v2 - Clientes (RESTful)
+      summary: Crear nuevo cliente
+      description: Crea un nuevo cliente directamente en el sistema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        '201':
+          description: Cliente creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Cliente registrado con éxito"
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v2/clients/{id_cliente}:
     get:
       security:
         - bearerAuth: []
       tags:
-        - Clientes
-      summary: Obtener un cliente específico
-      description: Retorna un cliente por su ID
+        - API v2 - Clientes (RESTful)
+      summary: Obtener cliente por ID
+      description: Obtiene un cliente específico por su ID
       parameters:
         - name: id_cliente
           in: path
@@ -354,44 +617,32 @@ paths:
       responses:
         '200':
           description: Cliente encontrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
         '404':
           description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /delete-client/{id_cliente}:
-    delete:
-      security:
-        - bearerAuth: []
-      tags:
-        - Clientes
-      summary: Eliminar un cliente
-      description: Elimina un cliente por su ID
-      parameters:
-        - name: id_cliente
-          in: path
-          required: true
-          description: ID del cliente a eliminar
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Cliente eliminado exitosamente
-        '404':
-          description: Cliente no encontrado
-        '409':
-          description: No se puede eliminar el cliente debido a referencias existentes
-        '500':
-          description: Error interno del servidor
-
-  /update-client/{id_cliente}:
     put:
       security:
         - bearerAuth: []
       tags:
-        - Clientes
-      summary: Actualizar un cliente
-      description: Actualiza la información de un cliente existente
+        - API v2 - Clientes (RESTful)
+      summary: Actualizar cliente
+      description: Actualiza un cliente existente por su ID
       parameters:
         - name: id_cliente
           in: path
@@ -408,74 +659,6 @@ paths:
       responses:
         '200':
           description: Cliente actualizado exitosamente
-        '404':
-          description: Cliente no encontrado
-        '500':
-          description: Error interno del servidor
-
-  /request-create-cliente:
-    post:
-      tags:
-        - Solicitudes de Creación
-      summary: Solicitud de creación de un nuevo cliente
-      description: Permite a un colaborador enviar una solicitud para crear un nuevo cliente. La solicitud quedará pendiente de aprobación.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - cedula
-                - nombre_completo_cliente
-                - direccion
-                - telefono
-              properties:
-                cedula:
-                  type: string
-                  minLength: 6
-                  maxLength: 15
-                  description: Número de identificación del cliente (cédula). Debe contener solo números.
-                  example: "1234567890"
-                nombre_completo_cliente:
-                  type: string
-                  minLength: 6
-                  maxLength: 200
-                  description: Nombre completo del cliente.
-                  example: "Juan Pérez González"
-                direccion:
-                  type: string
-                  minLength: 5
-                  maxLength: 255
-                  description: Dirección física del cliente.
-                  example: "Calle Principal #123, Ciudad"
-                telefono:
-                  type: string
-                  minLength: 8
-                  maxLength: 15
-                  description: Número de teléfono del cliente, solo dígitos.
-                  example: "3001234567"
-                rut_nit:
-                  type: string
-                  maxLength: 30
-                  description: Número de identificación tributaria del cliente (opcional).
-                  example: "900123456-7"
-                razon_social:
-                  type: string
-                  maxLength: 100
-                  description: Razón social para clientes empresariales (opcional).
-                  example: "Empresa XYZ S.A.S."
-                id_zona_de_trabajo:
-                  type: integer
-                  format: int32
-                  minimum: 1
-                  description: ID de la zona de trabajo a la que pertenece el cliente (opcional).
-                  example: 5
-      responses:
-        '201':
-          description: Cliente registrado con éxito (pendiente de aprobación)
           content:
             application/json:
               schema:
@@ -483,594 +666,25 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: "Cliente registrado con éxito"
-        '401':
-          description: No autorizado - Token no proporcionado o inválido
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "token inválido o expirado"
-        '403':
-          description: Prohibido - El usuario no tiene permisos para realizar esta acción
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "No tienes permisos para realizar esta acción"
-        '422':
-          description: Datos de entrada inválidos
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                        msg:
-                          type: string
-                        path:
-                          type: string
-                        location:
-                          type: string
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: object
-                    properties:
-                      errorInfo:
-                        type: string
-                        example: "Duplicate entry '1234567890' for key 'cedula'"
-                  - type: object
-                    properties:
-                      error:
-                        type: string
-                        example: "Internal Server Error"
-                      details:
-                        type: string
-
-  /get-Pending-Request:
-    get:
-      tags:
-        - Solicitudes de Creación
-      summary: Obtener solicitudes de creación de clientes pendientes
-      description: Permite a un administrador y a un colaborador obtener todas las solicitudes de creación de clientes que están en estado pendiente.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Lista de solicitudes pendientes obtenida con éxito
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id_cliente:
-                      type: integer
-                      description: Identificador único del cliente
-                      example: 1
-                    cedula:
-                      type: string
-                      description: Número de identificación del cliente
-                      example: "1234567890"
-                    nombre_completo_cliente:
-                      type: string
-                      description: Nombre completo del cliente
-                      example: "Juan Pérez González"
-                    direccion:
-                      type: string
-                      description: Dirección física del cliente
-                      example: "Calle Principal #123, Ciudad"
-                    telefono:
-                      type: string
-                      description: Número de teléfono del cliente
-                      example: "3001234567"
-                    rut_nit:
-                      type: string
-                      description: Número de identificación tributaria del cliente
-                      example: "900123456-7"
-                    razon_social:
-                      type: string
-                      description: Razón social para clientes empresariales
-                      example: "Empresa XYZ S.A.S."
-                    estado:
-                      type: string
-                      description: Estado de la solicitud (siempre "Pendiente" en esta ruta)
-                      example: "Pendiente"
-                    id_zona_de_trabajo:
-                      type: string
-                      description: ID de la zona de trabajo a la que pertenece el cliente
-                      example: "5"
-        '401':
-          description: No autorizado - Token no proporcionado o inválido
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "token inválido o expirado"
-        '403':
-          description: Prohibido - El usuario no tiene permisos para realizar esta acción
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "No tienes permisos para realizar esta acción"
-        '404':
-          description: No hay solicitudes pendientes
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "No hay solicitudes pendientes"
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
-                  details:
-                    type: string
-                    example: "Error message details"
-
-  /accept-Reject-Request/{id_client}:
-    put:
-      security:
-        - bearerAuth: []
-      tags:
-        - Solicitudes de Creación
-      summary: Aceptar o rechazar solicitud
-      description: Procesar una solicitud de creación de cliente
-      parameters:
-        - name: id_client
-          in: path
-          required: true
-          description: ID del cliente de la solicitud
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Solicitud procesada exitosamente
-        '404':
-          description: Solicitud no encontrada
-        '500':
-          description: Error interno del servidor
-
-  /get_dataArea/{id_area}:
-    get:
-      tags:
-        - Solicitudes para otro Microservicio
-      summary: Obtener información de una zona de trabajo por ID
-      description: Retorna los detalles de una zona de trabajo específica basada en el ID proporcionado.
-      parameters:
-        - name: id_area
-          in: path
-          required: true
-          description: ID de la zona de trabajo a consultar
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Zona de trabajo encontrada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id_zona_de_trabajo:
-                    type: integer
-                    example: 1
-                  nombre:
-                    type: string
-                    example: "Zona Norte"
-                  descripcion:
-                    type: string
-                    example: "Zona asignada para ventas en el sector norte"
-        404:
-          description: Zona de trabajo no encontrada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Zona no encontrada"
-        500:
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Error interno del servidor"
-  
-  /get_clientArea/{id_area}:
-    get:
-      tags:
-        - Solicitudes para otro Microservicio
-      summary: Obtener clientes por zona de trabajo
-      description: Retorna una lista de clientes asociados a una zona de trabajo específica.
-      parameters:
-        - name: id_area
-          in: path
-          required: true
-          description: ID de la zona de trabajo para la cual se desea obtener la lista de clientes.
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Lista de clientes en la zona de trabajo especificada.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id_cliente:
-                      type: integer
-                      description: ID del cliente.
-                    nombre:
-                      type: string
-                      description: Nombre del cliente.
-                    email:
-                      type: string
-                      format: email
-                      description: Correo electrónico del cliente.
-                    telefono:
-                      type: string
-                      description: Número de teléfono del cliente.
-        "404":
-          description: No hay clientes en la zona especificada.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: No hay clientes en esta zona
-        "500":
-          description: Error interno del servidor.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Error interno del servidor
-
-  /client/{id_client}:
-    get:
-      tags:
-        - Microservicio Preventa
-      summary: Obtener datos de un cliente para el microservicio de preventa
-      description: Consulta la información de un cliente específico y su zona de trabajo para ser utilizada por el microservicio de preventa.
-      parameters:
-        - name: id_client
-          in: path
-          required: true
-          description: Identificador único del cliente a consultar
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-      responses:
-        '200':
-          description: Datos del cliente obtenidos con éxito
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  razon_social:
-                    type: string
-                    description: Razón social del cliente (para empresas)
-                    example: "Empresa XYZ S.A.S."
-                  nombre_completo_cliente:
-                    type: string
-                    description: Nombre completo del cliente
-                    example: "Juan Pérez González"
-                  direccion:
-                    type: string
-                    description: Dirección física del cliente
-                    example: "Calle Principal #123, Ciudad"
-                  telefono:
-                    type: string
-                    description: Número de teléfono del cliente
-                    example: "3001234567"
-                  zona:
-                    type: string
-                    description: Nombre de la zona de trabajo asignada al cliente
-                    example: "Zona Norte"
+                    example: "Cliente actualizado con éxito"
         '404':
           description: Cliente no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Cliente con ID 123 no encontrado"
-        '422':
-          description: Error de validación en los parámetros
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                        msg:
-                          type: string
-                          example: "El id del cliente es obligatorio"
-                        path:
-                          type: string
-                          example: "id_client"
-                        location:
-                          type: string
-                          example: "params"
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
-                  details:
-                    type: string
-                    description: Detalles del error
-
-  # ============================================================
-  # NUEVAS RUTAS API v1 (RESTful - Consolidadas)
-  # ============================================================
-  # Estas rutas siguen los estándares RESTful con:
-  # - Versionado: /api/v2
-  # - Recursos en plural: /areas, /clients
-  # - Métodos HTTP semánticos
-  # ============================================================
-
-  /api/v2/areas:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Áreas (RESTful)
-      summary: Listar todas las áreas
-      description: Obtiene la lista de todas las áreas de trabajo (reemplaza /get-areas)
-      responses:
-        '200':
-          description: Lista de áreas obtenida exitosamente
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Area'
-        '500':
-          description: Error interno del servidor
-
-    post:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Áreas (RESTful)
-      summary: Crear nueva área
-      description: Crea una nueva área de trabajo (reemplaza /register-area)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Area'
-      responses:
-        '201':
-          description: Área creada exitosamente
+                $ref: '#/components/schemas/Error'
         '422':
           description: Error de validación
-        '500':
-          description: Error interno del servidor
-
-  /api/v2/areas/{id}:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Áreas (RESTful)
-      summary: Obtener área por ID
-      description: Obtiene una área específica por su ID (reemplaza /get-area/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Área encontrada
-        '404':
-          description: Área no encontrada
-        '500':
-          description: Error interno del servidor
-
-    put:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Áreas (RESTful)
-      summary: Actualizar área
-      description: Actualiza una área existente (reemplaza /update-area/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Area'
-      responses:
-        '200':
-          description: Área actualizada
-        '404':
-          description: Área no encontrada
-        '500':
-          description: Error interno del servidor
-
-    delete:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Áreas (RESTful)
-      summary: Eliminar área
-      description: Elimina una área existente (reemplaza /delete-area/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Área eliminada
-        '404':
-          description: Área no encontrada
-        '500':
-          description: Error interno del servidor
-
-  /api/v2/clients:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Clientes (RESTful)
-      summary: Listar todos los clientes
-      description: Obtiene la lista de todos los clientes (reemplaza /get-clients)
-      responses:
-        '200':
-          description: Lista de clientes obtenida exitosamente
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Client'
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
-
-    post:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Clientes (RESTful)
-      summary: Crear nuevo cliente
-      description: Crea un nuevo cliente directamente (reemplaza /register-client)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Client'
-      responses:
-        '201':
-          description: Cliente creado exitosamente
-        '422':
-          description: Error de validación
-        '500':
-          description: Error interno del servidor
-
-  /api/v2/clients/{id}:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Clientes (RESTful)
-      summary: Obtener cliente por ID
-      description: Obtiene un cliente específico por su ID (reemplaza /get-client/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Cliente encontrado
-        '404':
-          description: Cliente no encontrado
-        '500':
-          description: Error interno del servidor
-
-    put:
-      security:
-        - bearerAuth: []
-      tags:
-        - API v2 - Clientes (RESTful)
-      summary: Actualizar cliente
-      description: Actualiza un cliente existente (reemplaza /update-client/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Client'
-      responses:
-        '200':
-          description: Cliente actualizado
-        '404':
-          description: Cliente no encontrado
-        '500':
-          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     delete:
       security:
@@ -1078,20 +692,43 @@ paths:
       tags:
         - API v2 - Clientes (RESTful)
       summary: Eliminar cliente
-      description: Elimina un cliente existente (reemplaza /delete-client/{id})
+      description: Elimina un cliente existente por su ID
       parameters:
-        - name: id
+        - name: id_cliente
           in: path
           required: true
+          description: ID del cliente a eliminar
           schema:
             type: integer
       responses:
         '200':
-          description: Cliente eliminado
+          description: Cliente eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Cliente eliminado con éxito"
         '404':
           description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: No se puede eliminar el cliente debido a referencias existentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v2/client-requests:
     get:
@@ -1100,22 +737,56 @@ paths:
       tags:
         - API v2 - Solicitudes (RESTful)
       summary: Listar solicitudes de clientes
-      description: Obtiene la lista de solicitudes de creación de clientes (reemplaza /get-Pending-Request)
-      parameters:
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [pending, approved, rejected]
-          description: Filtrar por estado de la solicitud
+      description: Obtiene la lista de solicitudes de creación de clientes pendientes
       responses:
         '200':
-          description: Lista de solicitudes obtenida
+          description: Lista de solicitudes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id_cliente:
+                      type: integer
+                      description: ID del cliente
+                    cedula:
+                      type: string
+                      description: Cédula del cliente
+                    nombre_completo_cliente:
+                      type: string
+                      description: Nombre completo del cliente
+                    direccion:
+                      type: string
+                      description: Dirección del cliente
+                    telefono:
+                      type: string
+                      description: Teléfono del cliente
+                    rut_nit:
+                      type: string
+                      description: RUT/NIT del cliente
+                    razon_social:
+                      type: string
+                      description: Razón social del cliente
+                    estado:
+                      type: string
+                      description: Estado de la solicitud
+                    id_zona_de_trabajo:
+                      type: string
+                      description: ID de zona de trabajo
         '404':
           description: No hay solicitudes pendientes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     post:
       security:
@@ -1123,42 +794,38 @@ paths:
       tags:
         - API v2 - Solicitudes (RESTful)
       summary: Crear solicitud de cliente
-      description: Crea una solicitud de creación de cliente pendiente de aprobación (reemplaza /request-create-cliente)
+      description: Crea una solicitud de creación de cliente pendiente de aprobación
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - cedula
-                - nombre_completo_cliente
-                - direccion
-                - telefono
-              properties:
-                cedula:
-                  type: string
-                nombre_completo_cliente:
-                  type: string
-                direccion:
-                  type: string
-                telefono:
-                  type: string
-                rut_nit:
-                  type: string
-                razon_social:
-                  type: string
-                id_zona_de_trabajo:
-                  type: integer
+              $ref: '#/components/schemas/RequestCreateClient'
       responses:
         '201':
           description: Solicitud creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Cliente registrado con éxito"
         '422':
           description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /api/v2/client-requests/{id}/approve:
+  /api/v2/client-requests/{id_client}/approve:
     patch:
       security:
         - bearerAuth: []
@@ -1167,77 +834,32 @@ paths:
       summary: Aprobar solicitud de cliente
       description: Aprueba una solicitud de creación de cliente (reemplaza /accept-Reject-Request/{id})
       parameters:
-        - name: id
+        - name: id_client
           in: path
           required: true
+          description: ID del cliente de la solicitud a aprobar
           schema:
             type: integer
       responses:
         '200':
-          description: Solicitud aprobada
+          description: Solicitud aprobada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Solicitud aprobada con éxito"
         '404':
           description: Solicitud no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Error interno del servidor
-
-  /api/v2/internal/areas/{id}:
-    get:
-      tags:
-        - API v2 - Internal (Microservices)
-      summary: Obtener datos de área (para microservicios)
-      description: Obtiene información de un área para consumo interno de microservicios (reemplaza /get_dataArea/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Datos del área obtenidos
-        '404':
-          description: Área no encontrada
-        '500':
-          description: Error interno del servidor
-
-  /api/v2/internal/areas/{id}/clients:
-    get:
-      tags:
-        - API v2 - Internal (Microservices)
-      summary: Obtener clientes por área (para microservicios)
-      description: Obtiene la lista de clientes de un área para consumo interno (reemplaza /get_clientArea/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Lista de clientes obtenida
-        '404':
-          description: No hay clientes en esta área
-        '500':
-          description: Error interno del servidor
-
-  /api/v2/internal/clients/{id}:
-    get:
-      tags:
-        - API v2 - Internal (Microservices)
-      summary: Obtener datos de cliente (para microservicios)
-      description: Obtiene información detallada de un cliente para consumo interno de microservicios (reemplaza /client/{id})
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Datos del cliente obtenidos
-        '404':
-          description: Cliente no encontrado
-        '422':
-          description: Error de validación
-        '500':
-          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
