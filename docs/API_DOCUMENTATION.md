@@ -23,7 +23,7 @@
 ### Base URL
 ```
 Development: http://localhost:8080/api/v2
-Production: https://backendareasandclients-apgba5dxbrbwb2ex.eastus2-01.azurewebsites.net/api/v2
+Production: https://microservicebackendareasclientsv2-production.up.railway.app
 ```
 
 ### Example Request

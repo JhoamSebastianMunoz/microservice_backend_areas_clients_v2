@@ -8,10 +8,10 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:8080
-    description: Development server
   - url: https://microservicebackendareasclientsv2-production.up.railway.app
     description: Production server
+  - url: http://localhost:8080
+    description: Development server
 
 tags:
   - name: Áreas
